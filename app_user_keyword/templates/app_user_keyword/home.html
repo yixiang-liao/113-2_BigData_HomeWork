@@ -16,7 +16,7 @@
           <label class="col-md-3 col-form-label">關心哪個關鍵詞?</label>
           <div class="col-md-9">
             <input id="input_keyword" name="userkey" value="烏克蘭 俄羅斯" class="form-control" />
-            <div class="form-text text-muted">查找關鍵字，可輸入多個，空白隔開。主要以人名，產品，地理區域為主(搜尋斷詞後的詞語，並非全文搜尋)。</div>
+            <div class="form-text text-muted">全文搜尋關鍵字，可輸入多個，空白隔開。任何人名、產品、片語、特定詞皆可。</div>
           </div>
         </div>
 
@@ -220,6 +220,11 @@
           cond: cond
         }, // pass to server
         success: function (received) {
+          //若查無資料，顯示提醒訊息
+          if (received['error']) {
+            alert('檢索異常回應: ' + received['error'])
+            return 0
+          }
           const article_count = received['key_occurrence_cat']
           console.log(article_count)
           $('#keyword_article_count').empty()

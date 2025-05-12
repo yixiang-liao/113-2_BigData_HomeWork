@@ -3,8 +3,12 @@ from django.shortcuts import render
 import pandas as pd
 from datetime import datetime, timedelta
 from django.views.decorators.csrf import csrf_exempt
+import requests
+from app_user_keyword.views import filter_dataFrame
+import app_user_keyword.views as userkeyword_views
 
-
+'''
+# 跟別人借用df
 # (1) Load news data--approach 1 直接指定某個csv檔案
 def load_df_data_v1():
     global df # global variable
@@ -13,19 +17,57 @@ def load_df_data_v1():
 
 # (2) Load news data--approach 2 跟隔壁的app借用df
 # import from app_user_keyword.views and use df later
-import app_user_keyword.views as userkeyword_views
 def load_df_data():
     # import and use df from app_user_keyword 
     global df # global variable
     df = userkeyword_views.df
 
 # call load data function when starting server
-load_df_data_v1()
+#load_df_data_v1()
 #load_df_data()
+'''
 
 def home(request):
     return render(request, 'app_user_keyword_sentiment/home.html')
 
+# GET: csrf_exempt is not necessary
+# POST: csrf_exempt should be used
+@csrf_exempt
+def api_get_userkey_sentiment_from_remote_api_through_backend(request):
+
+    userkey = request.POST['userkey']
+    cate = request.POST['cate']
+    cond = request.POST['cond']
+    weeks = int(request.POST['weeks'])
+
+    try:
+        # (可選擇)展示從後端呼叫API: Call internet sentiment API using requests  但是不能自己呼叫自己!
+        url_api_get_sentiment = "http://163.18.23.20:8000/userkeyword_senti/api_get_userkey_sentiment/"
+        # Setup data for sentiment analysis request
+        sentiment_data = {
+            'userkey': userkey,
+            'cate': cate,
+            'cond': cond,
+            'weeks': weeks
+        }
+        # Alternative way to call the sentiment API directly with requests
+        sentiment_response = requests.post(url_api_get_sentiment, data=sentiment_data, timeout=5)
+        if sentiment_response.status_code == 200:
+            print("由後端呼叫他處API，取得情感分析數據成功!")
+            # 解析來自API的回應內容。 .json() 方法會將回應的 JSON 格式資料轉換成 Python 的字典(dictionary)或列表(list)。
+            # Parse the response content from the API. The .json() method converts the JSON formatted data from the response into a Python dictionary or list.
+            response = sentiment_response.json()
+            return JsonResponse(response)
+        else:
+            print(f"回傳有錯誤")
+            print(f"Sentiment API error: {sentiment_response.status_code}")
+            return JsonResponse({'error': 'Failed to get sentiment analysis.'})
+    except Exception as e:
+        # Catch any other unexpected errors during the process
+        print(f"An unexpected error occurred while processing sentiment data: {e}")
+        print(f"呼叫異常失敗，進行本地處理資料")
+        return JsonResponse({'error': 'An internal error occurred while processing sentiment data.'}, status=500) # Internal Server Error
+ 
 # GET: csrf_exempt is not necessary
 # POST: csrf_exempt should be used
 @csrf_exempt
@@ -35,17 +77,15 @@ def api_get_userkey_sentiment(request):
     cate = request.POST['cate']
     cond = request.POST['cond']
     weeks = int(request.POST['weeks'])
-    print(weeks)
-
+ 
+    # 進行本地處理資料
     query_keywords = userkey.split()
-    response = prepare_for_response(query_keywords, cond, cate, weeks)
-  
-    return JsonResponse(response)
-
-def prepare_for_response(query_keywords, cond, cate, weeks):
-
     # Proceed filtering
-    df_query = filter_df_via_content(query_keywords, cond, cate, weeks)
+    df_query = filter_dataFrame(query_keywords, cond, cate, weeks)
+    
+    # if df_query is empty, return an error message
+    if len(df_query) == 0:
+        return JsonResponse({'error': 'No results found for the given keywords.'})
     
     sentiCount, sentiPercnt = get_article_sentiment(df_query)
 
@@ -62,7 +102,7 @@ def prepare_for_response(query_keywords, cond, cate, weeks):
         'data_pos':line_data_pos,
         'data_neg':line_data_neg,
     }
-    return response
+    return JsonResponse(response)
 
 def get_article_sentiment(df_query):
     sentiCount = {'Positive': 0, 'Negative': 0, 'Neutral': 0}
@@ -108,45 +148,6 @@ def get_daily_basis_sentiment_count(df_query, sentiment_type='pos', freq_type='D
     # x,y，用於畫趨勢線圖
     xy_line_data = [{'x':date.strftime('%Y-%m-%d'),'y':freq} for date, freq in zip(freq_df_group.date_index,freq_df_group.frequency)]
     return xy_line_data
-
-# Searching keywords from "content" column
-# Here this function uses df.content column, while filter_dataFrame() uses df.tokens_v2
-def filter_df_via_content(query_keywords, cond, cate, weeks):
-
-    # end date: the date of the latest record of news
-    end_date = df.date.max()
-    
-    # start date
-    start_date_delta = (datetime.strptime(end_date, '%Y-%m-%d').date() - timedelta(weeks=weeks)).strftime('%Y-%m-%d')
-    start_date_min = df.date.min()
-    # set start_date as the larger one from the start_date_delta and start_date_min 開始時間選資料最早時間與周數:兩者較晚者
-    start_date = max(start_date_delta,   start_date_min)
-
-
-    # (1) proceed filtering: a duration of a period of time
-    # 期間條件
-    period_condition = (df.date >= start_date) & (df.date <= end_date) 
-    
-    # (2) proceed filtering: news category
-    # 新聞類別條件
-    if (cate == "全部"):
-        condition = period_condition  # "全部"類別不必過濾新聞種類
-    else:
-        # 過濾category新聞類別條件
-        condition = period_condition & (df.category == cate)
-
-    # (3) proceed filtering: and or
-    # and or 條件
-    if (cond == 'and'):
-        # query keywords condition使用者輸入關鍵字條件and
-        condition = condition & df.content.apply(lambda text: all((qk in text) for qk in query_keywords)) #寫法:all()
-    elif (cond == 'or'):
-        # query keywords condition使用者輸入關鍵字條件
-        condition = condition & df.content.apply(lambda text: any((qk in text) for qk in query_keywords)) #寫法:any()
-    # condiction is a list of True or False boolean value
-    df_query = df[condition]
-
-    return df_query
 
 
 print("app_userkey_sentiment was loaded!")

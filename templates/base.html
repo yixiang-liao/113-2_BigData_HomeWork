@@ -45,6 +45,7 @@
                       <a class="dropdown-item" href="{% url 'app_user_keyword:home' %}">自訂關鍵詞熱門度分析</a>
                       <a class="dropdown-item" href="{% url 'app_user_keyword_association:home' %}">自訂全文檢索與關聯分析</a>
                       <a class="dropdown-item" href="{% url 'app_user_keyword_sentiment:home' %}">自訂關鍵詞之情緒分析</a>
+                      <a class="dropdown-item" href="{% url 'app_user_keyword_llm_report:home' %}">自訂關鍵詞:呼叫語言模型產生分析報告</a>
                     </div>
                   </div>
 
@@ -63,13 +64,16 @@
                       <a class="nav-link" href="{% url 'app_correlation_analysis:home' %}" style="color: green">事件人物聲量相關分析</a>
                     </div>
                   </div>
-                  
+
                   <!-- 使用資料庫 -->
                   <div class="btn-group">
                     <button type="button" class="btn dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">使用DB</button>
                     <div class="dropdown-menu">
+                      <a class="dropdown-item" href="{% url 'app_user_keyword_db:home' %}">自訂全文檢索與關聯分析db</a>
                       <a class="dropdown-item" href="{% url 'app_top_person_db:home' %}">熱門人物(從資料庫查詢)</a>
-                      <a class="dropdown-item" href="{% url 'app_user_keyword_association_db:home' %}">自訂全文檢索與關聯分析db</a>
+                      <a class="dropdown-item" href="{% url 'app_top_person_sqlalchemy_db:home' %}">熱門人物(使用Sqlalchemy從資料庫查詢)</a>
+                      <div class="dropdown-divider"></div>
+                      <a class="dropdown-item" href="{% url 'app_top_person_db:calculate_top_person' %}">熱門人物立刻計算(管理者定時執行)</a>
                     </div>
                   </div>
 

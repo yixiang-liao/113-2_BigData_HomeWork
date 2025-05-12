@@ -1,5 +1,5 @@
 from django.urls import path
-from app_correlation_analysis import views
+from . import views
 
 # declare a namespace for this APP
 # the name of namespace usually is set as the app name

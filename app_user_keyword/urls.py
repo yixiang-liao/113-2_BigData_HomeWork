@@ -1,5 +1,5 @@
 from django.urls import path
-from app_user_keyword import views
+from . import views
 
 app_name="app_user_keyword"
 

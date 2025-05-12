@@ -212,9 +212,16 @@
     
       $.ajax({
         type: 'POST',
-        url: '/userkeyword_senti/api_get_userkey_sentiment/ ',
-        //url: 'api_get_userkey_sentiment/',
-        //url: "127.0.0.1:8000/key_senti/api_get_userkey_sentiment/",
+
+        //(1)本地端API
+        url: 'api_get_userkey_sentiment/',
+
+        //(2)透過後端呼叫遠端API
+        //url: 'api_get_userkey_sentiment_from_remote_api_through_backend/',
+        
+        //(3)由前端呼叫選端API
+        //url: "http://163.18.23.20:8000/userkeyword_senti/api_get_userkey_sentiment/",
+        
         data: {
           userkey: userkey,
           cate: cate,
@@ -222,6 +229,13 @@
           cond: cond
         }, // pass to server
         success: function (received) {
+
+        //若查無資料，顯示提醒訊息
+        if (received["error"]) {
+          alert("檢索異常回應: " + received["error"]);
+          return 0;
+        }
+
           // draw pie chart
           const data_pie = received['sentiCount']
           // 先清除前一個圖形

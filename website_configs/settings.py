@@ -35,8 +35,10 @@ INSTALLED_APPS = [
     'app_user_keyword_sentiment',
     'app_taipei_mayor',
     'app_correlation_analysis',
+    'app_top_person_sqlalchemy_db',
     'app_top_person_db',
-    'app_user_keyword_association_db',
+    'app_user_keyword_db',
+    'app_user_keyword_llm_report',
     'app_poa_introduction',
 ]
 
@@ -71,6 +73,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'website_configs.wsgi.application'
 
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Database
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases

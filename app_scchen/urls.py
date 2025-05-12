@@ -1,9 +1,5 @@
 from django.urls import path
-from app_scchen import views
-
-# declare a namespace for this APP
-# the name of namespace is 'app_top_person'
-# We will use the namespace in the future integrated website.
+from . import views
 
 #  使用app_name是讓各個APP的變數與方法名稱有區隔
 #  若名稱不衝突，不使用app_name也可以

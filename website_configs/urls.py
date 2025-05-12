@@ -5,6 +5,7 @@ from django.urls import include
 urlpatterns = [
     # top keywords
     path('topword/', include('app_top_keyword.urls')),
+    
     # app top persons
     path('topperson/', include('app_top_person.urls')),
     # top ner
@@ -24,26 +25,33 @@ urlpatterns = [
     # user keyword sentiment 
     path('userkeyword_senti/', include('app_user_keyword_sentiment.urls')),
     
+    # user keyword sentiment 
+    path('userkeyword_report/', include('app_user_keyword_llm_report.urls')),
+    
     # taipei mayor election
-    path('taipeimayor/', include('app_taipei_mayor.urls')),
+    # path('taipeimayor/', include('app_taipei_mayor.urls')),
 
     # taipei mayor election
-    #path('', include('app_taipei_mayor.urls')),
-
+    path('', include('app_taipei_mayor.urls')),
+    
     # correlation
     path('correlation/', include('app_correlation_analysis.urls')),
 
     # top k person using db
     path('topperson_db/', include('app_top_person_db.urls')),
     
+    # top k person using db
+    path('topperson_sqlalchemy_db/', include('app_top_person_sqlalchemy_db.urls')),
+    
     # full text search and associated keyword display using db
-    path('userkeyword_assoc_db/', include('app_user_keyword_association_db.urls')),
+    path('userkeyword_db/', include('app_user_keyword_db.urls')),
 
     # admin
     path('admin/', admin.site.urls),
     
     
     # course introduction
+    # path('', include('app_poa_introduction.urls')),
     path('poa_intro/', include('app_poa_introduction.urls')),
     
     # Sentiment classification with bert
